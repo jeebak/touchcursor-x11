@@ -1,0 +1,29 @@
+{
+    "type": "folder",
+    "title": "TouchCursor",
+    "modes": [
+        3
+    ],
+    "usageCount": 439,
+    "showInTrayMenu": false,
+    "abbreviation": {
+        "abbreviations": [],
+        "backspace": true,
+        "ignoreCase": false,
+        "immediate": false,
+        "triggerInside": false,
+        "wordChars": "[\\w]"
+    },
+    "hotkey": {
+        "modifiers": [
+            "<ctrl>",
+            "<shift>",
+            "<super>"
+        ],
+        "hotKey": "t"
+    },
+    "filter": {
+        "regex": null,
+        "isRecursive": false
+    }
+}

@@ -11,6 +11,7 @@ example of how to get TouchCursor bindings under Linux / X11.
 * https://github.com/viktorvan/TouchCursor
 * Old (pre-sierra **only**) [Karabiner](https://github.com/jeebak/dotfiles/tree/master/karabiner) customizations
 * My [Karabiner-Elements](https://pqrs.org/osx/karabiner/complex_modifications/#personal_jeebak) complex modification
+* My [Windows](https://github.com/jeebak/keyboard-windows) configs
 * [Example Layout](http://www.keyboard-layout-editor.com/#/gists/55f3e3c9149d23cbae5f8ac559627d0f)
 
 Use `xcape` to:

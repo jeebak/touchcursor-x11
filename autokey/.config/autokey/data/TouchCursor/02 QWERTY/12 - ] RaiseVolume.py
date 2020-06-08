@@ -11,4 +11,4 @@ engine.run_script('init-touchcursor')
 # pactl -- set-sink-volume 0 +5% # raise volume by each 10% (more than 100% possible, might distort the sound) 
 # pactl -- set-sink-volume 0 -5% # reduce volume by each 10% 
 # pactl -- set-sink-mute 0 toggle # mute/unmutes audio 
-system.exec_command("pactl -- set-sink-volume 0 +5%", getOutput=False)
+system.exec_command("pactl -- set-sink-volume @DEFAULT_SINK@ +5%", getOutput=False)

@@ -14,6 +14,22 @@ example of how to get TouchCursor bindings under Linux / X11.
 * My [Windows](https://github.com/jeebak/keyboard-windows) configs
 * [Example Layout](http://www.keyboard-layout-editor.com/#/gists/55f3e3c9149d23cbae5f8ac559627d0f)
 
+**Note (2026):** this repo is archived. `autokey` (used below for the Hyper
+combos) is a heavyweight, aging Python daemon — there are much better
+options now for implementing TouchCursor-style layers on Linux:
+
+* [touchcursor-linux](https://github.com/donniebreve/touchcursor-linux) —
+  a purpose-built TouchCursor port for Linux, runs as a user-level systemd
+  service, works under both Xorg and Wayland
+* [keyd](https://github.com/rvaiya/keyd) — a general-purpose key-remapping
+  daemon (C, kernel-level via evdev/uinput, sub-1ms latency) with native
+  layers, key overloading, and per-application layer switching; what I've
+  since switched to
+* [kmonad](https://github.com/kmonad/kmonad) — a general-purpose advanced
+  keyboard customization tool (Haskell), cross-platform (Linux/Windows/macOS)
+* [kanata](https://github.com/jtroo/kanata) — a general-purpose keyboard
+  remapper (Rust) inspired by kmonad, cross-platform (Linux/macOS/Windows)
+
 Use `xcape` to:
 
 * Set the CapsLock to emit an `esc` on tap, and act as a control

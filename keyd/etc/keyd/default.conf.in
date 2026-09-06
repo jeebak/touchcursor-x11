@@ -1,0 +1,367 @@
+# /etc/keyd/default.conf
+# ─────────────────────────────────────────────────────────────────────────────
+# TouchCursor-style keyboard layer for Linux/X11
+# Derived from Karabiner Elements personal_jeebak.json (macOS gold standard):
+# https://ke-complex-modifications.pqrs.org/?rule=json%2Fpersonal_jeebak.json
+# (src: https://github.com/pqrs-org/KE-complex_modifications/blob/main/src/json/personal_jeebak.json.js)
+#
+# TEMPLATE: This is default.conf.in, not the deployed config. It contains
+#   @HOME@/@USER@/@UID@ placeholders (this package isn't machine-portable
+#   as plain text -- command() bindings below need real, hard-coded values,
+#   not env-var expansions keyd itself would have to resolve at runtime).
+#   install.sh and reload.sh render it with sed and write the
+#   result to /etc/keyd/default.conf (root-owned).
+#   keyd-application-mapper &   # reads ~/.config/keyd/app.conf
+#
+# REPLACE: Removes the need for xcape, xmodmap, and AutoKey entirely.
+#
+# macOS → Linux adaptations:
+#   left_command  → meta  (Super/Win key)
+#   left_option   → alt
+#   Cmd+key       → C-key (most Linux apps)
+#   workspace L/R → M-semicolon / M-apostrophe (XFCE: see app.conf note)
+#   toggle term   → M-slash (XFCE: Super+slash)
+#   Mission Ctrl  → M-w (GNOME) — CUSTOMIZE to your WM's expose shortcut
+#
+# NOTE: keyd's parser only treats `#` as a comment when it is the FIRST
+#       character on the line — it does NOT strip trailing `# ...` text after
+#       a binding (src/ini.c: `case '#': continue;` only fires pre-tokenize).
+#       A bare-token action like `m = delete   # forward delete` therefore
+#       fails to parse ("invalid key or action") because the comment text
+#       gets appended to the action value and the WHOLE binding is silently
+#       dropped. Parenthesized calls like `overload(...)`/`command(...)` are
+#       immune (the parser stops at the matching close-paren), so those keep
+#       inline comments; every bare-token binding below has its comment moved
+#       to its own line instead. Verify with: journalctl -u keyd | grep ERROR
+# ─────────────────────────────────────────────────────────────────────────────
+
+[ids]
+*
+# Exclude Mouseless virtual devices via vendor prefix
+# https://mouseless.click/docs/app_conflicts.html#keyd
+-736e
+
+# ═════════════════════════════════════════════════════════════════════════════
+# BASE LAYER
+# ═════════════════════════════════════════════════════════════════════════════
+
+[main]
+
+# CapsLock: hold = Control, tap = Escape (was xcape's job; keyd's own
+# examples/capslock-esc-basic.conf documents this exact idiom).
+# Remote-desktop passthrough handled in app.conf.
+capslock = overload(control, esc)
+
+# Space:  tap = space,    hold = TouchCursor nav layer
+space = overload(nav, space)
+
+# Tab:    tap = tab,      hold = Tab modifier layer (small -- see below)
+tab = overload(tab_mod, tab)
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TOUCHCURSOR NAVIGATION LAYER  (Space held)
+# ═════════════════════════════════════════════════════════════════════════════
+# Keys not defined here fall through to [main] transparently.
+#
+# Modifier stacking works naturally — no special config needed:
+#   Space + Ctrl + J  → Ctrl+Left  (word left)
+#   Space + Ctrl + L  → Ctrl+Right (word right)
+#   Space + Ctrl + I  → Ctrl+Up
+#   Space + Ctrl + BS → Ctrl+Backspace (kill word backward)
+#   Space + Ctrl + M  → Ctrl+Delete   (kill word forward, since nav:M=delete)
+#   Space + Shift + I → Shift+Up      (select up)
+#   Space + Shift + J → Shift+Left    (select)
+#   ... all Shift+nav combos work the same way
+#
+# A (hold) is its own modifier layer, not a real physical modifier key, so it
+# stacks the same way but resolves to Ctrl or Alt depending on the focused
+# app -- see 'a''s binding below and app.conf's per-terminal override:
+#   Space + A + J     → Ctrl+Left  (GUI apps)   / Alt+Left  (terminals)
+#   Space + A + P     → Ctrl+Backspace (GUI)    / Alt+Backspace (terminals)
+#   Space + A + M     → Ctrl+Delete (GUI)       / Alt+D (terminals, overridden
+#                        -- see [alt+nav] below)
+
+[nav]
+
+# ── QWERTY row ────────────────────────────────────────────────────────────────
+# app switcher    (macOS: Cmd+Tab     → Linux: Alt+Tab)
+q = A-tab
+# next tab        (macOS: Ctrl+Tab    → Linux: Ctrl+Tab ✓)
+w = C-tab
+e = overload(meta, C-n) # tap=new window  (macOS: Cmd+N       → Ctrl+N), hold=Meta
+r = overload(shift, C-r)# tap=refresh     (macOS: Cmd+R       → Ctrl+R), hold=Shift
+                        #   Shift stacks with nav: Space+R+I = Shift+Up (select up)
+# tilde ~         (macOS: Shift+` ✓)
+t = S-grave
+# mute toggle     (media key ✓)
+y = mute
+u = home
+i = up
+o = end
+p = backspace
+[ = volumedown
+] = volumeup
+\ = playpause
+
+# ── Home row ─────────────────────────────────────────────────────────────────
+# tap=select all (macOS: Cmd+A -> Ctrl+A); hold=Control by default, matching
+# the standard Linux/Windows GUI word-nav convention (Space+A+J = Ctrl+Left).
+# app.conf overrides this to hold=Alt for terminal window classes instead
+# (matching readline/emacs conventions, and Claude Code's own word-nav/kill-
+# word handling, which expect Alt, not Ctrl -- see [alt+nav] below).
+a = overload(control, C-a)
+# literal space
+s = space
+# close tab/win   (macOS: Cmd+W       → Ctrl+W)
+d = C-w
+# find            (macOS: Cmd+F       → Ctrl+F)
+f = C-f
+# find next       (macOS: Cmd+G       → Ctrl+G)
+g = C-g
+h = pageup
+j = left
+k = down
+l = right
+# workspace prev
+# (XFCE: Super+semicolon → prev_workspace_key)
+# ; = M-;
+# (Cinnamon: Control+Alt+Left → prev_workspace_key)
+; = C-A-left
+# workspace next
+# (XFCE: Super+apostrophe → next_workspace_key)
+# ' = M-'
+# (Cinnamon: Control+Alt+Right → next_workspace_key)
+' = C-A-right
+
+# ── Bottom row ────────────────────────────────────────────────────────────────
+# undo            (macOS: Cmd+Z  → Ctrl+Z)
+z = C-z
+# cut             (macOS: Cmd+X  → Ctrl+X)
+x = C-x
+# copy            (macOS: Cmd+C  → Ctrl+C)
+c = C-c
+# paste           (macOS: Cmd+V  → Ctrl+V)
+v = C-v
+# backtick `      (macOS: ` ✓)
+b = grave
+n = pagedown
+# forward delete  (macOS: delete_forward ✓)
+m = delete
+# new tab         (macOS: Cmd+T  → Ctrl+T)
+, = C-t
+# reopen tab      (macOS: Cmd+Shift+T → Ctrl+Shift+T)
+. = C-S-t
+# toggle terminal dropdown -- runs the script directly via command(), no
+# DE keyboard-shortcut config involved (was xfconf's Super+slash, which
+# went silently inert the moment this machine moved off XFCE onto Cinnamon
+# -- nothing reads xfce4-keyboard-shortcuts' custom bindings there).
+#
+# command() runs as root with no session (keyd.service has no User=), so
+# `su @USER@ -c` is required to reach the real DISPLAY/D-Bus session --
+# root's own D-Bus session access silently fails: confirmed live, a direct
+# root command() spawn of gnome-terminal left a broken, permanently
+# IsUnMapped 10x10 InputOnly stub window instead of a real one.
+#
+# NOTE: command()'s argument does its own naive first-`)` match, not
+# balanced-paren matching -- a nested $(...) inside the command string
+# truncates it silently. NOTE: command() also has a 256-char hard length
+# cap ("max command length (256) exceeded") -- inlining
+# toggle-hotkey-window.bash's args plus the DISPLAY/XAUTHORITY/DBUS/XDG_RUNTIME_DIR
+# exports here blew past it, so those now live in toggle-visor-terminal.bash
+# (a thin wrapper) instead; this binding just invokes it, rendered ~65 chars.
+/ = command(su @USER@ -c "@HOME@/.local/bin/toggle-visor-terminal.bash")
+
+# ── Number row → F keys ───────────────────────────────────────────────────────
+1 = f1
+2 = f2
+3 = f3
+4 = f4
+5 = f5
+6 = f6
+7 = f7
+8 = f8
+9 = f9
+0 = f10
+- = f11
+= = f12
+
+# ── Other ─────────────────────────────────────────────────────────────────────
+# cycle windows in same app (macOS: Opt+Tab)
+#
+# NOT plain `A-tab` -- that's macro shorthand for a single, self-contained
+# "Alt down, Tab down, Tab up, Alt up" chord. Every repeated tap while
+# Space is still held would re-run the WHOLE chord, releasing Alt between
+# taps -- which closes/reopens the switcher instead of cycling through it
+# like real Alt-Tab (Alt held continuously, Tab tapped repeatedly, Alt
+# released only on select). swapm() swaps nav out for the alt_tab layer
+# below, which emulates Alt as a modifier (the `:A` suffix) for the
+# duration of the ORIGINAL activating keypress (space, not tab) -- this is
+# `man keyd.rvaiya`'s own documented pattern for alt-tab-style switching
+# (Example 4).
+tab    = swapm(alt_tab, A-tab)
+# workspace up -- same action rightshift already sends below; a second,
+# more ergonomic trigger for it, not a Mission Control/expose replacement
+# (no expose equivalent is configured -- neither XFCE nor Cinnamon has one
+# built in, and Ctrl+Alt+Up/Down/Left/Right is each DE's own default
+# workspace-switching chord, so no custom shortcut registration needed)
+enter  = C-A-up
+# previous track / rewind
+escape      = previoussong
+# same binding on ` key
+grave       = previoussong
+# next track / fast-forward
+backspace   = nextsong
+
+# ── Modifiers in nav mode ────────────────────────────────────────────────────
+# non-breaking space  (macOS: Opt+Space)
+leftshift  = A-space
+# workspace up        (macOS: Ctrl+Up / Mission Control up)
+# Linux: Ctrl+Alt+Up (common for virtual desktop up)
+rightshift = C-A-up
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ALT+NAV OVERRIDE  (Space+A held, i.e. nav + alt layers both active)
+# ═════════════════════════════════════════════════════════════════════════════
+# "alt" is only ever active here via app.conf's per-terminal override of
+# nav's `a` binding (default.conf.in's own [nav] section holds Control by
+# default) -- so this composite layer, and everything in it, only applies
+# inside a terminal window.
+#
+# m falls through to nav's `m = delete` with alt applied, i.e. physical
+# Alt+Delete -- but Claude Code's chat input (undocumented, not exposed via
+# ~/.claude/keybindings.json -- confirmed against code.claude.com/docs/en/
+# keybindings, which only covers app-level actions, not text-editing)
+# interprets Alt+Delete as "kill to end of line", not delete-word-forward.
+# Override just this one key to send A-d (Alt+D) instead -- the standard
+# readline/emacs kill-word-forward binding, already handled correctly by
+# both zsh (default `\ed` -> kill-word) and Claude Code, unlike Alt+Delete.
+# p (Alt+Backspace, backward-kill-word) is untouched -- both apps already
+# get that one right via nav's plain fallthrough.
+[alt+nav]
+m = A-d
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ALT-TAB LAYER  (swapped in from nav's tab key, held for as long as Space
+# stays held -- NOT tied to tab's own hold state)
+# ═════════════════════════════════════════════════════════════════════════════
+# The `:A` suffix emulates Alt as a modifier for any key not explicitly
+# bound below, for as long as this layer is active. Repeated bare Tab taps
+# (while Space is still held) land here and just resend A-tab, without
+# re-running the swapm() that got us in -- Alt never lets go in between.
+
+[alt_tab:A]
+tab = A-tab
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TAB MODIFIER LAYER  (Tab held) — small, single-purpose
+# ═════════════════════════════════════════════════════════════════════════════
+# Deliberately minimal -- a full Hyper-chord passthrough (every letter =
+# Meta+Ctrl+Alt+Shift+<key>) lived here before and was removed entirely
+# rather than left half-used. Keys not defined here fall through to
+# [main] transparently, same as [nav].
+
+[tab_mod]
+# literal tab pass-through
+t = tab
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# OPTION/COMMAND SWAP  (Alt+Meta held together, Tab tapped, toggles --
+# permanently, until toggled again -- see [alt+meta] below)
+# ═════════════════════════════════════════════════════════════════════════════
+# Redirects what the PHYSICAL Option/Command keys activate -- leftalt now
+# activates the "meta" layer and leftmeta now activates the "alt" layer,
+# and vice versa on release. Every other binding that references alt/meta
+# BY LAYER NAME (e.g. nav's `a = overload(alt, C-a)`) is unaffected and
+# needs no changes: those bindings activate the alt/meta layer directly,
+# regardless of which physical key got them there. Toggling only changes
+# which physical key you press to reach a given layer, not what that
+# layer does once active.
+
+[swapped_modifiers]
+leftalt   = layer(meta)
+rightalt  = layer(meta)
+leftmeta  = layer(alt)
+rightmeta = layer(alt)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ALT+META TOGGLE TRIGGER  (Alt+Meta held together, Tab tapped)
+# ═════════════════════════════════════════════════════════════════════════════
+# Moved off tab_mod's `o` (Tab+O) -- too easy/common a combo to spend on a
+# toggle this rarely used. Alt+Meta+Tab is deliberately awkward for humans
+# and isn't claimed by any mainstream DE or app shortcut (Alt+Tab, Ctrl+Tab,
+# Super+Tab, and Ctrl+Alt+Tab are all taken; Alt+Meta+Tab together is not).
+#
+# Composite layers key off LAYER names (alt/meta), not physical keys, so
+# this fires the same way to toggle back OFF after the swap has flipped
+# which physical key activates which layer -- no special-casing needed.
+
+[alt+meta]
+tab = toggle(swapped_modifiers)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PASSTHROUGH LAYER  (remote desktop / VMs)
+# ═════════════════════════════════════════════════════════════════════════════
+# Applied via app.conf when RDP/VNC/VM apps are focused.
+# Overrides all dual-function overloads so keys pass through literally,
+# letting the remote machine handle its own keyboard mapping.
+
+[passthrough]
+capslock   = capslock
+space      = space
+tab        = tab
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# WINDOW SNAP-TO-GRID  (Ctrl+Shift+Super / Ctrl+Shift+Alt composite layers)
+# ═════════════════════════════════════════════════════════════════════════════
+# Runs snap-window.bash via command() (through the snap-window-user.bash
+# wrapper -- see its own header comment for why: command() runs as root and
+# snap-window.bash doesn't need to), bypassing DE keyboard-shortcut config
+# entirely. Ported from an earlier XFCE-based window-snap setup, which
+# wired the identical 24 actions to two xfconf modifier spaces (HYPER =
+# Ctrl+Shift+Super, ALTPS = Ctrl+Shift+Alt). Composite layers (activated
+# when all constituent modifier layers -- here control/shift/meta and
+# control/shift/alt, keyd's built-in names for Ctrl/Shift/Super and
+# Ctrl/Shift/Alt -- are held simultaneously) reproduce that same
+# two-modifier-space design natively, so both sets keep their original
+# letters. No separate trigger key needed, unlike an earlier attempt that
+# tried to fit both sets into a single held-Tab layer.
+#
+# keyd binds by PHYSICAL key, not the shifted symbol: the source's
+# <Shift>greater / <Shift>less become the physical period/comma keys below
+# (Shift is already part of the chord).
+
+[control+shift+meta]
+y = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top left-third full")
+h = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top middle-third full")
+n = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top right-third full")
+i = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top full half")
+k = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash bottom full half")
+j = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top left full")
+l = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top right full")
+u = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top left half")
+o = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top right half")
+m = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash bottom left half")
+. = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash bottom right half")
+, = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash center")
+; = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash maximized")
+
+[control+shift+alt]
+j = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top left-third half")
+k = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top middle-third half")
+l = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top right-third half")
+m = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash bottom left-third half")
+, = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash bottom middle-third half")
+. = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash bottom right-third half")
+u = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top one-fourth full")
+i = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top two-fourth full")
+o = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top three-fourth full")
+p = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top four-fourth full")
+h = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top left-two-thirds full")
+' = command(su @USER@ -c "@HOME@/.local/bin/snap-window-user.bash top right-two-thirds full")

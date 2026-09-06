@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=keyd-application-mapper
+Comment=Per-application keyd layer switching (touchcursor-x11)
+Exec=keyd-application-mapper -d
+Terminal=false
+X-GNOME-Autostart-enabled=true

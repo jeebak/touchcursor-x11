@@ -14,9 +14,11 @@ example of how to get TouchCursor bindings under Linux / X11.
 * My [Windows](https://github.com/jeebak/keyboard-windows) configs
 * [Example Layout](http://www.keyboard-layout-editor.com/#/gists/55f3e3c9149d23cbae5f8ac559627d0f)
 
-**Note (2026):** this repo is archived. `autokey` (used below for the Hyper
-combos) is a heavyweight, aging Python daemon — there are much better
-options now for implementing TouchCursor-style layers on Linux:
+**Note (2026):** this repo is being repurposed for a `keyd` implementation of
+TouchCursor-style layers (see below). The `autokey`-based setup further down
+(used for the Hyper combos) is the original approach — a heavyweight, aging
+Python daemon — kept here for reference. There are much better options now
+for implementing TouchCursor-style layers on Linux:
 
 * [touchcursor-linux](https://github.com/donniebreve/touchcursor-linux) —
   a purpose-built TouchCursor port for Linux, runs as a user-level systemd
